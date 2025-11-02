@@ -4,9 +4,10 @@
 # - calculate focuser position for selected filter using autofocus tool
 # - store information about filter and calculated focus point in database
 # - read and set focuser position from/to database
-# - work in two modes:
-#   - calculate focuser position for all filters in filter wheel and store in database
-#   - set focuser position for selected filter from database
+# - work in three modes:
+# -- 'CALCULATE' [default] calculate focuser position for all filters in filter wheel and store in database
+# -- 'READ' read configuration for focuser and filters from database
+# -- 'RESET' reset focuser position to 0, set first filter in filters wheel, reomove all offsets for filters
 # Script use the CCDciel JSON-RPC interface.
 # For more information and reference of the available methods see: 
 # https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
