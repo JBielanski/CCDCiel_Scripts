@@ -13,6 +13,10 @@ Script to manage focuser position per filter
    - 'READ'      read configuration for focuser and filters from database
    - 'RESET'     reset focuser position to 0, set first filter in filters wheel, reomove all offsets for filters
 
+Requirements:
+## Supports for OFFSETS in scripts is new in CCDCiel and needs:
+## CCDCiel 0.9.92-3829 or newer: https://vega.ap-i.net/pub/ccdciel/daily_build/
+
 Script use the CCDciel JSON-RPC interface.
 For more information and reference of the available methods see: 
 https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
