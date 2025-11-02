@@ -2,7 +2,7 @@
 Repository contains the CCDCiel python scripts for making easier some complex operations.
 
 # focuser_position_per_filter
-# (C) Jan Bielanski 2025
+(C) Jan Bielanski 2025
 Script to manage focuser position per filter
 - calculate focuser position for selected filter using autofocus tool
 - store information about filter and calculated focus point in database
@@ -11,9 +11,10 @@ Script to manage focuser position per filter
    - 'CALCULATE' [default] calculate focuser position for all filters in filter wheel and store in database
    - 'READ'      read configuration for focuser and filters from database
    - 'RESET'     reset focuser position to 0, set first filter in filters wheel, reomove all offsets for filters
- Script use the CCDciel JSON-RPC interface.
- For more information and reference of the available methods see: 
- https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
+
+Script use the CCDciel JSON-RPC interface.
+For more information and reference of the available methods see: 
+https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 
  List of changes:
 # [26-10-2025] Initial version
