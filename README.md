@@ -3,6 +3,7 @@ Repository contains the CCDCiel python scripts for making easier some complex op
 
 # focuser_position_per_filter
 (C) Jan Bielanski 2025
+
 Script to manage focuser position per filter
 - calculate focuser position for selected filter using autofocus tool
 - store information about filter and calculated focus point in database
