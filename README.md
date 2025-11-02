@@ -25,24 +25,31 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 1) First usage
 - set manually focuser in position near focuse point
 - run script with parameters:
+
 --> "-f <position>" - provide position near focus point
+
 --> "-d <name>" - name of database, default "focuser_position_per_filter.db"
 
 2) Usage when database has been created:
 - run script with parameters:
+
 --> "-d <name>" - name of database if you provide own name, default "focuser_position_per_filter.db"
 
 3) Read data from database without running autofocus
 - run script with parameters:
+
 --> "-m READ" - script will read data from database
+
 --> "-d <name>" - name of database if you provide own name, default "focuser_position_per_filter.db"
 
 4) Reset focuser and filter wheel data, useful at the end off session
 - run script with parameters:
+
 --> "-m RESET"
 
 5) Display help
 - run script with parameters:
+
 --> "--help"
 
  List of changes:
