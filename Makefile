@@ -1,10 +1,17 @@
 # Detect the operating system and set the PYTHON variable accordingly
 ifeq ($(OS),Windows_NT)
-    PYTHON = python
-    CCDCIEL_DIR = %APPDATA%\\ccdciel
+	PYTHON = python
+	CCDCIEL_DIR = %APPDATA%\\ccdciel
 else
-    PYTHON = /usr/bin/python
-    CCDCIEL_DIR = ~/.config/ccdciel
+	PYTHON = /usr/bin/python
+	ifeq ("$(wildcard $(PYTHON))","")
+		PYTHON = /usr/bin/python3
+		ifeq ("$(wildcard $(PYTHON))","")
+			@echo "Python not found!!!";
+			exit 0;
+		endif
+	endif
+	CCDCIEL_DIR = ~/.config/ccdciel
 endif
 PYTHON_VERSION = $(shell $(PYTHON) -c 'import sys; print("{0[0]}{0[1]}".format(sys.version_info));')
 

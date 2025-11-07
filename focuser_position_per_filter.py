@@ -33,6 +33,11 @@
 # [02-11-2025]
 # - added RESET working mode to reset focuser positions and offsets for all filters
 # - added check for sqlite3 module
+# [07-11-2025]
+# - support CCDCiel version
+# - disable setting OFFSET for CCDCiel older than 0.9.92.3829
+# - added option which allow to provide reference filter: --filtername, -n <filter name>
+# - added selection between AutomaticAutofocus and Autofocus by: --focustype, -t <autofocus type: AUTO, INPLACE>
 # ---------------------------------------------------------------------------- #
 #
 
@@ -63,17 +68,21 @@ import time
 # GLOBAL VARIABLES
 this_script_path = os.path.abspath(__file__) # Path to this script
 this_script_dir = os.path.dirname(this_script_path) # Directory of this script
+ccdciel_version = ccdciel('CCDciel_Version')['result'] # Main version, short revision, full revision stored in array
 initial_focuser_position = 0 # Initial focuser position
 filters_and_focuser_positions_database_file = 'focuser_position_per_filter.db' # Name of file with filters and focuser positions
 filters_and_focuser_positions_database_directory = this_script_dir # Directory with database file
-filter_name_to_set = ['', 0] # Filter name and position provided by user otherwise used reference filter or current filter in filter wheel
+filter_name_to_set = ['', 0, None] # Filter name and position provided by user otherwise used reference filter or current filter in filter wheel
 script_working_mode = 0 # Script working mode, 0 - calculate focuser position for all filters in filter wheel, 1 - read focuser position for selected filter from database
+focus_type = 0 # Autofocus type AUTO - with eventually move to a bright star, INPLACE - autofocus in place
 
 # arguments_parser - parse arguments from command line
 # @arguments
 # --dbname, -d <database file name>
 # --focuserposition, -f <focuser position>
-# --mode, -m <working mode>: CALCULATE, READ, RESET
+# --filtername, -n <filter name>
+# --focustype, -t <autofocus type: AUTO, INPLACE>
+# --mode, -m <working mode: CALCULATE, READ, RESET>
 # --help, -help - display help
 def arguments_parser():
    """Parse command line arguments and update global settings.
@@ -81,6 +90,8 @@ def arguments_parser():
    Supported options:
    --dbname, -d <database file name>
    --focuserposition, -f <focuser position>
+   --filtername, -n <filter name>
+   --focustype, -t <autofocus type: AUTO, INPLACE>
    --mode, -m <working mode>: CALCULATE, READ, RESET
    --help, -help - display help and exit
 
@@ -94,7 +105,7 @@ def arguments_parser():
    global script_working_mode
 
    usage = (
-      "Usage: {} [--dbname|-d <database>] [--focuserposition|-f <pos>] [--mode|-m CALCULATE/READ/RESET] [--help|-help]".format(sys.argv[0])
+      "Usage: {} [--mode|-m CALCULATE (default)/READ/RESET] [--dbname|-d <database>] [--focuserposition|-f <pos>] [--focustype|-t <autofocus type: AUTO (default)/INPLACE>] [--filtername|-n <name>] [--help|-help]".format(sys.argv[0])
    )
 
    args = sys.argv[1:]
@@ -106,7 +117,7 @@ def arguments_parser():
       a = args[i]
       if a in ("--help", "-help"):
          print(usage)
-         print("\nOptions:\n  --dbname, -d <database file name>\n  --focuserposition, -f <focuser position>\n  --help, -help\n")
+         print("\nOptions:\n  --mode,-m <working mode: CALCULATE (default)/READ/RESET>\n --dbname, -d <database file name>\n  --focuserposition, -f <focuser position>\n  --focustype, -t <autofocus type: AUTO (default)/INPLACE>\n  --filtername, -n <name>\n  --help, -help\n")
          sys.exit(0)
       elif a in ("--dbname", "-d"):
          if i + 1 >= len(args):
@@ -126,6 +137,32 @@ def arguments_parser():
          except ValueError:
             print("Error: invalid focuser position, must be integer: %s" % args[i+1])
             sys.exit(1)
+         ccdciel('LogMsg', 'Initial focuser position set from arguments: %d' % (initial_focuser_position))
+         i += 2
+         
+      elif a in ("--focustype", "-t"):
+         if i + 1 >= len(args):
+            print("Error: missing value for %s" % a)
+            print(usage)
+            sys.exit(1)
+         mode_arg = args[i+1].upper()
+         if mode_arg == "AUTO":
+            focus_type = 0
+         elif mode_arg == "INPLACE":
+            focus_type = 1
+         else:
+            print("Error: invalid focus type for %s, must be AUTO, INPLACE" % a)
+            print(usage)
+            sys.exit(1)
+         ccdciel('LogMsg', 'Script working mode set from arguments: %s' % (mode_arg))
+         i += 2
+         
+      elif a in ("--filtername", "-n"):
+         if i + 1 >= len(args):
+            print("Error: missing value for %s" % a)
+            print(usage)
+            sys.exit(1)
+         filter_name_to_set[2] = args[i+1]
          ccdciel('LogMsg', 'Initial focuser position set from arguments: %d' % (initial_focuser_position))
          i += 2
       elif a in ("--mode", "-m"):
@@ -152,6 +189,26 @@ def arguments_parser():
          sys.exit(1)
 
    return
+   
+# check_for_version_neq_0_9_92_3829
+# @return status
+# 1 - newer version
+# 0 - older version
+def check_for_version_neq_0_9_92_3829(display_log):
+   global ccdciel_version
+   status = 0 # Status of operation
+   if ccdciel_version[0] == '0.9.92':
+      if int(ccdciel_version[1]) >= 3829:
+         status = 1
+         if display_log == 1:
+            ccdciel('LogMsg', 'Setting FILTERS OFFSETS for FOCUSER supported in script')
+      else:
+         if display_log == 1:
+            ccdciel('LogMsg', 'Setting FILTERS OFFSETS for FOCUSER NOT supported in script, minimal version is 0.9.92-3829')
+   else:
+      if display_log == 1:
+         ccdciel('LogMsg', 'Setting FILTERS OFFSETS for FOCUSER NOT supported in script, minimal version is 0.9.92-3829')
+   return status
 
 # check_necessary_components - check if necessary components are connected
 # @return status - status of operation
@@ -183,6 +240,9 @@ def check_necessary_components():
    if not connected_w :
       ccdciel('LogMsg','[CRITICAL ERROR] Filter wheel not connected!')
       status = 21
+
+   # Offsets support
+   check_for_version_neq_0_9_92_3829(1)
 
    # Exit script if necessary components are not connected
    if status != 0:
@@ -423,6 +483,7 @@ def set_focuser_position(new_focuser_position):
 def calculate_focuser_position(filter_name):
    global filters_and_focuser_positions_database_file
    global filters_and_focuser_positions_database_directory
+   global focus_type
 
    status = 0 # Status of operation
    restore = 0 # Restore flag, 0 - normal operation, 1 - need to restore, 2 - in progress, 3 - can not restore
@@ -524,8 +585,12 @@ def calculate_focuser_position(filter_name):
             exit(1)
       
    # Calculate focuser position for selected filter using autofocus tool
-   ccdciel('LogMsg','Calculate focuser position for selected filter using autofocus tool')
-   ccdciel('AutomaticAutofocus')
+   if focus_type == 0:
+      ccdciel('LogMsg','Calculate focuser position for selected filter using automatic autofocus tool')
+      ccdciel('AutomaticAutofocus')
+   elif focus_type == 1:
+      ccdciel('LogMsg','Calculate focuser position for selected filter using autofocus tool')
+      ccdciel('Autofocus')
 
    # Get calculated focuser position
    filter_index_and_name_focuser_position[2] = ccdciel('FocuserPosition')['result']
@@ -578,8 +643,9 @@ def calculate_focuser_position_for_filter_wheel():
    list_of_filters = (ccdciel('Wheel_GetfiltersName')['result'])
 
    # Reset offset for each filter in filters wheel
-   for idf,f in enumerate(list_of_filters):
-      ccdciel('Set_FilterOffset',[f,0])
+   if check_for_version_neq_0_9_92_3829(0) == 1:
+      for idf,f in enumerate(list_of_filters):
+         ccdciel('Set_FilterOffset',[f,0])
 
    # Calculate focuser position for each filter
    for idf,f in enumerate(list_of_filters):
@@ -610,8 +676,9 @@ def calculate_focuser_position_for_filter_wheel():
       filter_name_to_set[1] = reference_filter_id
    for idf,f in enumerate(list_of_filters):
       focuser_position_per_filter[idf][4] = focuser_position_per_filter[idf][2] - focuser_position_per_filter[reference_filter_id-1][2]
-      ccdciel('Set_FilterOffset',[focuser_position_per_filter[idf][1],focuser_position_per_filter[idf][4]])
-      ccdciel('LogMsg','Filter index: %d name: %s offset: %d' % (focuser_position_per_filter[idf][0],focuser_position_per_filter[idf][1],focuser_position_per_filter[idf][4]))
+      if check_for_version_neq_0_9_92_3829(0) == 1:
+         ccdciel('Set_FilterOffset',[focuser_position_per_filter[idf][1],focuser_position_per_filter[idf][4]])
+         ccdciel('LogMsg','Filter index: %d name: %s offset: %d' % (focuser_position_per_filter[idf][0],focuser_position_per_filter[idf][1],focuser_position_per_filter[idf][4]))
 
    # Store calculated focuser position for each filter in database
    for item in focuser_position_per_filter:
@@ -642,7 +709,17 @@ def read_focuser_position_for_filters():
    # Get list of filters in filter wheel
    list_of_filters = (ccdciel('Wheel_GetfiltersName')['result'])
    filters_configured_in_database = []
-
+   
+   # Looking for filter provided by parameters
+   if filter_name_to_set[2] != None:
+      for idf,f in enumerate(list_of_filters):
+         if f == filter_name_to_set[2]:
+            filter_name_to_set[0] = f
+            filter_name_to_set[1] = idf+1
+      if filter_name_to_set[0] != filter_name_to_set[2]:
+         ccdciel('LogMsg','[WARNING] Filter name %s not found in filter wheel use current' % (filter_name_to_set[2]))
+         filter_name_to_set[2] = None
+         
    # Get focuser position for filters from database
    for idf,f in enumerate(list_of_filters):
       status, position_reference_and_offset = get_focuser_position_for_filter_from_database(filters_and_focuser_positions_database_file,filters_and_focuser_positions_database_directory,f) 
@@ -650,23 +727,39 @@ def read_focuser_position_for_filters():
          ccdciel('LogMsg','Filter %s configuration in database -> focuser position: %d reference flag: %d offset: %d' % (f,position_reference_and_offset[0],position_reference_and_offset[1],position_reference_and_offset[2]))
          filters_configured_in_database.append(position_reference_and_offset)
          if position_reference_and_offset[1] == 1:
-            filter_name_to_set[0] = f
-            filter_name_to_set[1] = idf+1
+            if filter_name_to_set[2] == None:
+               filter_name_to_set[0] = f
+               filter_name_to_set[1] = idf+1
+            else:
+               ccdciel('LogMsg','[WARNING] Use filter provided by user %s as reference over reference filter stored in database: %s' % (filter_name_to_set[2], f))
       else:
          ccdciel('LogMsg','[CRITICAL ERROR] Can not read focuser position for filter %s from database' % (f))
          exit(1)
 
    # Reset offset for each filter in filters wheel
-   for idf,f in enumerate(list_of_filters):
-      ccdciel('Set_FilterOffset',[f,0])
+   if check_for_version_neq_0_9_92_3829(0) == 1:
+      for idf,f in enumerate(list_of_filters):
+         ccdciel('Set_FilterOffset',[f,0])
 
    # Apply configuration for selected filter
    status = select_filter_and_set_focuser_position(filters_and_focuser_positions_database_file,filters_and_focuser_positions_database_directory, filter_name_to_set)
 
    # Set offset for each filter in filters wheel
-   for idf,f in enumerate(list_of_filters):
-      ccdciel('Set_FilterOffset',[f,filters_configured_in_database[idf][2]])
-      ccdciel('LogMsg','Filter index: %d name: %s offset: %d' % (idf+1,f,filters_configured_in_database[idf][2]))
+   if check_for_version_neq_0_9_92_3829(0) == 1:
+      # Recalculate offsets
+      if filter_name_to_set[2] == filter_name_to_set[0]:
+         # Get current focuser position
+         cur_focuser_position = ccdciel('FocuserPosition')['result']
+         # Calculate and set offsets
+         for idf,f in enumerate(list_of_filters):
+            filter_offset = filters_configured_in_database[idf][0]-cur_focuser_position
+            ccdciel('Set_FilterOffset',[f,filter_offset])
+            ccdciel('LogMsg','Filter index: %d name: %s calculated offset: %d' % (idf+1,f,filter_offset))
+      else:
+         # Set offset from database
+         for idf,f in enumerate(list_of_filters):
+            ccdciel('Set_FilterOffset',[f,filters_configured_in_database[idf][2]])
+            ccdciel('LogMsg','Filter index: %d name: %s offset: %d' % (idf+1,f,filters_configured_in_database[idf][2]))
 
    return status   
 

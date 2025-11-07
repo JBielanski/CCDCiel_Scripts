@@ -12,10 +12,15 @@ Script to manage focuser position per filter
    - 'CALCULATE' [default] calculate focuser position for all filters in filter wheel and store in database
    - 'READ'      read configuration for focuser and filters from database
    - 'RESET'     reset focuser position to 0, set first filter in filters wheel, reomove all offsets for filters
+- allow to select focus method:
+   - 'AUTO' [DEFAULT] can move to focus star
+   - 'INPLACE' perform autofocus in current position
+- allow to provide reference/current filter name (for CCDCiel older than 0.9.92-3829) as parameter
 
 Requirements:
 ## Supports for OFFSETS in scripts is new in CCDCiel and needs:
 ## CCDCiel 0.9.92-3829 or newer: https://vega.ap-i.net/pub/ccdciel/daily_build/
+## For older vesion script works differently for READ mode and disable all operation in script which try to modify offsets in CCDCiel
 
 Script use the CCDciel JSON-RPC interface.
 For more information and reference of the available methods see: 
@@ -30,10 +35,14 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 
 --> "-d <name>" - name of database, default "focuser_position_per_filter.db"
 
+--> "-t <autofocus type>" - set autofocus method AUTO or INPLACE, AUTO is default and could move telescope to focus star 
+
 2) Usage when database has been created:
 - run script with parameters:
 
 --> "-d <name>" - name of database if you provide own name, default "focuser_position_per_filter.db"
+
+--> "-t <autofocus type>" - set autofocus method AUTO or INPLACE, AUTO is default and could move telescope to focus star
 
 3) Read data from database without running autofocus
 - run script with parameters:
@@ -41,6 +50,8 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 --> "-m READ" - script will read data from database
 
 --> "-d <name>" - name of database if you provide own name, default "focuser_position_per_filter.db"
+
+--> "-n <filter name>" - set reference filter, for CCDCiel older than 0.9.92-3829 set current filter and read position
 
 4) Reset focuser and filter wheel data, useful at the end off session
 - run script with parameters:
@@ -73,3 +84,8 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 # [02-11-2025]
  - added RESET working mode to reset focuser positions and offsets for all filters
  - added check for sqlite3 module
+# [07-11-2025]
+ - support CCDCiel version
+ - disable setting OFFSET for CCDCiel older than 0.9.92.3829
+ - added option which allow to provide reference filter: --filtername, -n <filter name>
+ - added selection between AutomaticAutofocus and Autofocus by: --focustype, -t <autofocus type: AUTO, INPLACE>
