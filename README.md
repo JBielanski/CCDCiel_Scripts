@@ -2,7 +2,13 @@
 Repository contains the CCDCiel python scripts for making easier some complex operations.
 
 # focuser_position_per_filter
-(C) Jan Bielanski 2025
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
+See the top-level `LICENSE` file for the full license text.
+
+Copyright (c) 2025 Jan Bielanski
 
 Script to manage focuser position per filter
 - calculate focuser position for selected filter using autofocus tool
@@ -92,3 +98,4 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 # [09-11-2025]
 - added filter usage flag in database, allow to reduce filters for which will autofocus to selected subset: SELECTED FILTERS + REFERENCE FILTER
 - for other filters only offset will be recalculated
+- release under GPL-3.0 license

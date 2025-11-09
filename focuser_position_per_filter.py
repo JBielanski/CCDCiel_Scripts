@@ -1,5 +1,8 @@
 # focuser_position_per_filter.py
-# (C) 2025 Jan Bielanski
+# SPDX-FileCopyrightText: 2025 Jan Bielanski
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# ---------------------------------------------------------------------------- #
 # Script to manage focuser position per filter
 # - calculate focuser position for selected filter using autofocus tool
 # - store information about filter and calculated focus point in database
