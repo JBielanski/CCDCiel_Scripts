@@ -38,6 +38,9 @@
 # - disable setting OFFSET for CCDCiel older than 0.9.92.3829
 # - added option which allow to provide reference filter: --filtername, -n <filter name>
 # - added selection between AutomaticAutofocus and Autofocus by: --focustype, -t <autofocus type: AUTO, INPLACE>
+# [09-11-2025]
+# - added filter usage flag in database, allow to reduce filters for which will autofocus to selected subset: SELECTED FILTERS + REFERENCE FILTER
+# - for other filters only offset will be recalculated
 # ---------------------------------------------------------------------------- #
 #
 
@@ -277,10 +280,9 @@ def reset_focuser_positions_and_offsets():
 # @arguments
 # db_name - name of file with database
 # db_directory - directory with database file
-# focuser_position - initial focuser position
-# filter_name - selected filter name
+# filter_name - name of filter for which data will be read
 #
-# @return status, focuser_position
+# @return status, array  with: focuser_position, reference flag, filter offset and filter usage flag
 # 0 - no error / success
 # 31 - can not open database
 # 32 - can not ready any data for selected filter
@@ -291,8 +293,8 @@ def reset_focuser_positions_and_offsets():
 #
 def get_focuser_position_for_filter_from_database(db_name, db_directory, filter_name):
    status = 0 # Status of operation
-   status_array = [0,0,0] # Status array for focuser position, reference flag and offset
-   focuser_position_reference_flag_and_offset = [0, 0, 0] # Focuser position, reference flag and offset for selected filter
+   status_array = [0,0,0, ] # Status array for focuser position, reference flag, offset and usage flag
+   focuser_position_reference_flag_offset_and_usage_flag = [0, 0, 0, 0] # Focuser position, reference flag, offset and usage flag for selected filter
 
    ccdciel('LogMsg','Database directory: %s name: %s' %(db_directory, db_name))
    ccdciel('LogMsg','Selected filter name: %s' %(filter_name))
@@ -304,14 +306,14 @@ def get_focuser_position_for_filter_from_database(db_name, db_directory, filter_
    except sqlite3.Error as e:
       ccdciel('LogMsg','[ERROR] Can not open database %s: %s' %(db_name, str(e)))
       status = 31
-      return status, focuser_position_reference_flag_and_offset
+      return status, focuser_position_reference_flag_offset_and_usage_flag
    
    # Read focuser position for selected filter
    try:
       cursor.execute("SELECT focuser_position FROM filters_focuser_position WHERE filter_name = ?", (filter_name,))
       result = cursor.fetchone()
       if result:
-         focuser_position_reference_flag_and_offset[0] = result[0]
+         focuser_position_reference_flag_offset_and_usage_flag[0] = result[0]
       else:
          ccdciel('LogMsg','[ERROR] No focuser position for selected filter %s in database' %(filter_name))
          status_array[0] = 33
@@ -319,7 +321,7 @@ def get_focuser_position_for_filter_from_database(db_name, db_directory, filter_
       cursor.execute("SELECT reference_flag FROM filters_focuser_position WHERE filter_name = ?", (filter_name,))
       result = cursor.fetchone()
       if result:
-         focuser_position_reference_flag_and_offset[1] = result[0]
+         focuser_position_reference_flag_offset_and_usage_flag[1] = result[0]
       else:
          ccdciel('LogMsg','[ERROR] No reference flag for selected filter %s in database' %(filter_name))
          status_array[1] = 34
@@ -327,11 +329,21 @@ def get_focuser_position_for_filter_from_database(db_name, db_directory, filter_
       cursor.execute("SELECT offset_for_filter FROM filters_focuser_position WHERE filter_name = ?", (filter_name,))
       result = cursor.fetchone()
       if result:
-         focuser_position_reference_flag_and_offset[2] = result[0]
+         focuser_position_reference_flag_offset_and_usage_flag[2] = result[0]
          status = 0
       else:
          ccdciel('LogMsg','[ERROR] No focuser offset for selected filter %s in database' %(filter_name))
          status_array[2] = 35
+
+      cursor.execute("SELECT usage_flag FROM filters_focuser_position WHERE filter_name = ?", (filter_name,))
+      result = cursor.fetchone()
+      if result:
+         focuser_position_reference_flag_offset_and_usage_flag[3] = result[0]
+         status = 0
+      else:
+         ccdciel('LogMsg','[WARNING] No usage flag for selected filter %s in database, mark filter as in use' %(filter_name))
+         focuser_position_reference_flag_offset_and_usage_flag[3] = 1
+         status = 0
 
       # Determine overall status
       if status_array[0] == 33 and status_array[1] == 34 and status_array[2] == 35:
@@ -353,7 +365,7 @@ def get_focuser_position_for_filter_from_database(db_name, db_directory, filter_
    finally:
       conn.close()
 
-   return status, focuser_position_reference_flag_and_offset
+   return status, focuser_position_reference_flag_offset_and_usage_flag
 
 # store_position_per_filter_in_database - store information about filter and
 #                                         caclulated focus point in database
@@ -362,12 +374,15 @@ def get_focuser_position_for_filter_from_database(db_name, db_directory, filter_
 # db_directory - directory with database file
 # filter_name - selected filter name
 # focuser_position - focuser position
+# reference_flag - reference flag for selected filter (0 - no, 1 - yes)
+# offset_for_filter - offset for selected filter calculated from reference filter
+# usage_flag - filter usage flag (0 - no, 1 - yes)
 #
 # @return status
 # 0 - success
 # 31 - can not open database
 #
-def store_position_per_filter_in_database(db_name, db_directory, filter_name, focuser_position, reference_flag, offset_for_filter):
+def store_position_per_filter_in_database(db_name, db_directory, filter_name, focuser_position, reference_flag, offset_for_filter, usage_flag):
    status = 0
 
    ccdciel('LogMsg','Save focuser position for \"%s\" filter in \"%s/%s\" database' %(filter_name, db_directory, db_name))
@@ -382,16 +397,18 @@ def store_position_per_filter_in_database(db_name, db_directory, filter_name, fo
                         filter_name TEXT PRIMARY KEY,
                         focuser_position INTEGER,
                         reference_flag INTEGER,
-                        offset_for_filter INTEGER
+                        offset_for_filter INTEGER,
+                        usage_flag INTEGER
                      )''')
 
       # Insert or update the filter name and focuser position
-      cursor.execute('''INSERT INTO filters_focuser_position (filter_name, focuser_position, reference_flag, offset_for_filter)
-                          VALUES (?, ?, ?, ?)
+      cursor.execute('''INSERT INTO filters_focuser_position (filter_name, focuser_position, reference_flag, offset_for_filter, usage_flag)
+                          VALUES (?, ?, ?, ?, ?)
                           ON CONFLICT(filter_name) DO UPDATE SET focuser_position=excluded.focuser_position,
                                                                  reference_flag=excluded.reference_flag,
-                                                                 offset_for_filter=excluded.offset_for_filter''',
-                       (filter_name, focuser_position, reference_flag, offset_for_filter))
+                                                                 offset_for_filter=excluded.offset_for_filter,
+                                                                 usage_flag=excluded.usage_flag''',
+                       (filter_name, focuser_position, reference_flag, offset_for_filter, usage_flag))
 
       # Commit changes and close connection
       conn.commit()
@@ -487,7 +504,7 @@ def calculate_focuser_position(filter_name):
 
    status = 0 # Status of operation
    restore = 0 # Restore flag, 0 - normal operation, 1 - need to restore, 2 - in progress, 3 - can not restore
-   filter_index_and_name_focuser_position = [ 0, 'NONE', 0, 0, 0 ] # array with filter index, name, focuser position, reference filter and offset
+   filter_index_and_name_focuser_position = [ 0, 'NONE', 0, 0, 0, 0 ] # array with filter index, name, focuser position, reference filter, offset and usage flag
    cur_init_fwheel_index = [0,0] # current and initial filter wheel index
    max_time_array = [30,60] # max operation time [normal,restore]
    cur_max_time = [0,0] # current and max time
@@ -560,15 +577,17 @@ def calculate_focuser_position(filter_name):
          exit(1)
 
    # Get optimal position for filter from data base
-   status, position_reference_and_offset = get_focuser_position_for_filter_from_database(filters_and_focuser_positions_database_file,filters_and_focuser_positions_database_directory,filter_name) 
+   status, focuser_position_reference_flag_offset_and_usage_flag = get_focuser_position_for_filter_from_database(filters_and_focuser_positions_database_file,filters_and_focuser_positions_database_directory,filter_name)
    if status == 34 or status == 35 or status == 36 or status == 0:
-      filter_index_and_name_focuser_position[2] = position_reference_and_offset[0]
+      filter_index_and_name_focuser_position[2] = focuser_position_reference_flag_offset_and_usage_flag[0]
       ccdciel('LogMsg','Focuser position for filter %s read from database is %d' % (filter_name,filter_index_and_name_focuser_position[2]))
       set_focuser_position(filter_index_and_name_focuser_position[2])
       
       # Set reference filter and offset to 0 will be calculated after autofocus
-      filter_index_and_name_focuser_position[3] = position_reference_and_offset[1]
+      filter_index_and_name_focuser_position[3] = focuser_position_reference_flag_offset_and_usage_flag[1]
       filter_index_and_name_focuser_position[4] = 0
+      filter_index_and_name_focuser_position[5] = focuser_position_reference_flag_offset_and_usage_flag[3]
+
       status = 0
    # Focuser position for selected filter not found in database
    else:
@@ -584,17 +603,26 @@ def calculate_focuser_position(filter_name):
             ccdciel('LogMsg','[CRITILAC ERROR] Focuser position for filter %s is set to 0, calculating using autofocus could be dangerous, set focuser manually near focus point and rerun script with parameter \"-f position\"' % (filter_name))
             exit(1)
       
-   # Calculate focuser position for selected filter using autofocus tool
-   if focus_type == 0:
-      ccdciel('LogMsg','Calculate focuser position for selected filter using automatic autofocus tool')
-      ccdciel('AutomaticAutofocus')
-   elif focus_type == 1:
-      ccdciel('LogMsg','Calculate focuser position for selected filter using autofocus tool')
-      ccdciel('Autofocus')
+   # Calculate focuser position for selected filter using autofocus tool if filter is reference or usage flag is set to 1
+   if filter_index_and_name_focuser_position[3] == 1 or filter_index_and_name_focuser_position[5] == 1:
+      if filter_index_and_name_focuser_position[5] == 0:
+         ccdciel('LogMsg','Calculate focuser position for selected filter %s, reference flag have priority over usage flag which set to 0' % (filter_name))
+      if focus_type == 0:
+         ccdciel('LogMsg','Calculate focuser position for selected filter using automatic autofocus tool')
+         ccdciel('AutomaticAutofocus')
+      elif focus_type == 1:
+         ccdciel('LogMsg','Calculate focuser position for selected filter using autofocus tool')
+         ccdciel('Autofocus')
+      else:
+         ccdciel('LogMsg','[CRITICAL ERROR] Unknown autofocus type %d' % (focus_type))
+         exit(1)
 
-   # Get calculated focuser position
-   filter_index_and_name_focuser_position[2] = ccdciel('FocuserPosition')['result']
-   ccdciel('LogMsg','Calculated focuser position for filter %s is %d' % (filter_name,filter_index_and_name_focuser_position[2]))
+      # Get calculated focuser position
+      filter_index_and_name_focuser_position[2] = ccdciel('FocuserPosition')['result']
+      ccdciel('LogMsg','Calculated focuser position for filter %s is %d' % (filter_name,filter_index_and_name_focuser_position[2]))
+
+   else:
+      ccdciel('LogMsg','Skip calculating focuser position for selected filter %s, usage flag is set to 0' % (filter_name))
 
    return status, filter_index_and_name_focuser_position
 
@@ -612,11 +640,11 @@ def select_filter_and_set_focuser_position(db_name, db_directory, filter_name_an
    cur_focuser_position = ccdciel('FocuserPosition')['result']
 
    # Get focuser position for selected filter from database
-   status, focuser_position_reference_flag_and_offset = get_focuser_position_for_filter_from_database(db_name, db_directory, filter_name_and_index[0])
+   status, focuser_position_reference_flag_offset_and_usage_flag = get_focuser_position_for_filter_from_database(db_name, db_directory, filter_name_and_index[0])
 
    # Set focuser position for selected filter
    if status == 0 or status == 34 or status == 35 or status == 36:
-      set_focuser_position(focuser_position_reference_flag_and_offset[0])
+      set_focuser_position(focuser_position_reference_flag_offset_and_usage_flag[0])
    else:
       ccdciel('LogMsg','[WARNING] Can not read focuser position for filter %s from database, script will use current focuser position %d' % (filter_name_and_index[0],cur_focuser_position))
       status = 15
@@ -661,7 +689,7 @@ def calculate_focuser_position_for_filter_wheel():
          # Store calculated focuser position for filter in array
          focuser_position_per_filter.append(filter_and_focuser_position)
       else:
-         filter_index_and_name_focuser_position = [ idf+1, f, ccdciel('FocuserPosition')['result'], 0, 0 ]
+         filter_index_and_name_focuser_position = [ idf+1, f, ccdciel('FocuserPosition')['result'], 0, 0, 1 ] # array with filter index, name, focuser position, reference filter, offset and usage flag
          focuser_position_per_filter.append(filter_index_and_name_focuser_position)
          ccdciel('LogMsg','[ERROR] Can not calculate focuser position for filter %s' % (f))
    
@@ -682,7 +710,7 @@ def calculate_focuser_position_for_filter_wheel():
 
    # Store calculated focuser position for each filter in database
    for item in focuser_position_per_filter:
-      status = store_position_per_filter_in_database(filters_and_focuser_positions_database_file,filters_and_focuser_positions_database_directory,item[1],item[2],item[3],item[4])
+      status = store_position_per_filter_in_database(filters_and_focuser_positions_database_file,filters_and_focuser_positions_database_directory,item[1],item[2],item[3],item[4],item[5])
       if status != 0:
          ccdciel('LogMsg','[ERROR] Can not store focuser position %d for filter %d:%s in database' % (item[2], item[0], item[1]))
       else:
@@ -722,11 +750,11 @@ def read_focuser_position_for_filters():
          
    # Get focuser position for filters from database
    for idf,f in enumerate(list_of_filters):
-      status, position_reference_and_offset = get_focuser_position_for_filter_from_database(filters_and_focuser_positions_database_file,filters_and_focuser_positions_database_directory,f) 
+      status, focuser_position_reference_flag_offset_and_usage_flag = get_focuser_position_for_filter_from_database(filters_and_focuser_positions_database_file,filters_and_focuser_positions_database_directory,f)
       if status == 0:
-         ccdciel('LogMsg','Filter %s configuration in database -> focuser position: %d reference flag: %d offset: %d' % (f,position_reference_and_offset[0],position_reference_and_offset[1],position_reference_and_offset[2]))
-         filters_configured_in_database.append(position_reference_and_offset)
-         if position_reference_and_offset[1] == 1:
+         ccdciel('LogMsg','Filter %s configuration in database -> focuser position: %d reference flag: %d offset: %d' % (f,focuser_position_reference_flag_offset_and_usage_flag[0],focuser_position_reference_flag_offset_and_usage_flag[1],focuser_position_reference_flag_offset_and_usage_flag[2]))
+         filters_configured_in_database.append(focuser_position_reference_flag_offset_and_usage_flag)
+         if focuser_position_reference_flag_offset_and_usage_flag[1] == 1:
             if filter_name_to_set[2] == None:
                filter_name_to_set[0] = f
                filter_name_to_set[1] = idf+1

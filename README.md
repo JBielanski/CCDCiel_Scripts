@@ -89,3 +89,6 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
  - disable setting OFFSET for CCDCiel older than 0.9.92.3829
  - added option which allow to provide reference filter: --filtername, -n <filter name>
  - added selection between AutomaticAutofocus and Autofocus by: --focustype, -t <autofocus type: AUTO, INPLACE>
+# [09-11-2025]
+- added filter usage flag in database, allow to reduce filters for which will autofocus to selected subset: SELECTED FILTERS + REFERENCE FILTER
+- for other filters only offset will be recalculated
