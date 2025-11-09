@@ -85,7 +85,7 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
  - added RESET working mode to reset focuser positions and offsets for all filters
  - added check for sqlite3 module
 # [07-11-2025]
- - support CCDCiel version
+ - support recognize CCDCiel version in script
  - disable setting OFFSET for CCDCiel older than 0.9.92.3829
  - added option which allow to provide reference filter: --filtername, -n <filter name>
  - added selection between AutomaticAutofocus and Autofocus by: --focustype, -t <autofocus type: AUTO, INPLACE>
