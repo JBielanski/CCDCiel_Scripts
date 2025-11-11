@@ -69,6 +69,9 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 
 --> "--help"
 
+ TODO:
+- Add parameter which allow to select filters subset like: "-s [1,3,4,5]" for slots 1,3,4 and 5.
+
  List of changes:
 # [26-10-2025] Initial version
  - calculate focuser position for selected filter using autofocus tool

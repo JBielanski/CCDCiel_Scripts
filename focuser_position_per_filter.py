@@ -46,6 +46,9 @@
 # - for other filters only offset will be recalculated
 # ---------------------------------------------------------------------------- #
 #
+# TODO:
+# - Add parameter which allow to select filters subset like: "-s [1,3,4,5]" for slots 1,3,4 and 5.
+#
 
 from ccdciel import ccdciel
 import sqlite3
