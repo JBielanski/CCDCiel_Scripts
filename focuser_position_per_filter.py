@@ -44,10 +44,10 @@
 # [09-11-2025]
 # - added filter usage flag in database, allow to reduce filters for which will autofocus to selected subset: SELECTED FILTERS + REFERENCE FILTER
 # - for other filters only offset will be recalculated
+# - release under GPL-3.0 license
+# [12-11-2025]
+# - added command line argument to select filters subset like "-s [1,3,4,5]" for slots 1,3,4 and 5: --subset, -s <list of filter indexes>
 # ---------------------------------------------------------------------------- #
-#
-# TODO:
-# - Add parameter which allow to select filters subset like: "-s [1,3,4,5]" for slots 1,3,4 and 5.
 #
 
 from ccdciel import ccdciel
@@ -82,6 +82,7 @@ initial_focuser_position = 0 # Initial focuser position
 filters_and_focuser_positions_database_file = 'focuser_position_per_filter.db' # Name of file with filters and focuser positions
 filters_and_focuser_positions_database_directory = this_script_dir # Directory with database file
 filter_name_to_set = ['', 0, None] # Filter name and position provided by user otherwise used reference filter or current filter in filter wheel
+filters_subset = [] # List of selected filters for which autofocus will be performed provided by argument
 script_working_mode = 0 # Script working mode, 0 - calculate focuser position for all filters in filter wheel, 1 - read focuser position for selected filter from database
 focus_type = 0 # Autofocus type AUTO - with eventually move to a bright star, INPLACE - autofocus in place
 
@@ -90,6 +91,7 @@ focus_type = 0 # Autofocus type AUTO - with eventually move to a bright star, IN
 # --dbname, -d <database file name>
 # --focuserposition, -f <focuser position>
 # --filtername, -n <filter name>
+# --subset, -s <list of filter indexes>
 # --focustype, -t <autofocus type: AUTO, INPLACE>
 # --mode, -m <working mode: CALCULATE, READ, RESET>
 # --help, -help - display help
@@ -100,6 +102,7 @@ def arguments_parser():
    --dbname, -d <database file name>
    --focuserposition, -f <focuser position>
    --filtername, -n <filter name>
+   --subset, -s <list of filter indexes>
    --focustype, -t <autofocus type: AUTO, INPLACE>
    --mode, -m <working mode>: CALCULATE, READ, RESET
    --help, -help - display help and exit
@@ -112,9 +115,10 @@ def arguments_parser():
    global filters_and_focuser_positions_database_file
    global filter_name_to_set
    global script_working_mode
+   global filters_subset
 
    usage = (
-      "Usage: {} [--mode|-m CALCULATE (default)/READ/RESET] [--dbname|-d <database>] [--focuserposition|-f <pos>] [--focustype|-t <autofocus type: AUTO (default)/INPLACE>] [--filtername|-n <name>] [--help|-help]".format(sys.argv[0])
+      "Usage: {} [--mode|-m CALCULATE (default)/READ/RESET] [--dbname|-d <database>] [--focuserposition|-f <pos>] [--subset|-s <list of filter indexes>] [--focustype|-t <autofocus type: AUTO (default)/INPLACE>] [--filtername|-n <name>] [--help|-help]".format(sys.argv[0])
    )
 
    args = sys.argv[1:]
@@ -174,6 +178,22 @@ def arguments_parser():
          filter_name_to_set[2] = args[i+1]
          ccdciel('LogMsg', 'Initial focuser position set from arguments: %d' % (initial_focuser_position))
          i += 2
+
+      elif a in ("--subset", "-s"):
+         if i + 1 >= len(args):
+            print("Error: missing value for %s" % a)
+            print(usage)
+            sys.exit(1)
+         subset_arg = args[i+1]
+         try:
+            filters_subset = [int(x) for x in subset_arg.strip('[]').split(',')]
+         except ValueError:
+            print("Error: invalid subset format for %s, must be a list of integers like [1,3,4]" % a)
+            print(usage)
+            sys.exit(1)
+         ccdciel('LogMsg', 'Filter subset set from arguments: %s' % (filters_subset))
+         i += 2
+
       elif a in ("--mode", "-m"):
          if i + 1 >= len(args):
             print("Error: missing value for %s" % a)
@@ -506,6 +526,7 @@ def set_focuser_position(new_focuser_position):
 def calculate_focuser_position(filter_name):
    global filters_and_focuser_positions_database_file
    global filters_and_focuser_positions_database_directory
+   global filters_subset
    global focus_type
 
    status = 0 # Status of operation
@@ -608,6 +629,20 @@ def calculate_focuser_position(filter_name):
          else:
             ccdciel('LogMsg','[CRITILAC ERROR] Focuser position for filter %s is set to 0, calculating using autofocus could be dangerous, set focuser manually near focus point and rerun script with parameter \"-f position\"' % (filter_name))
             exit(1)
+
+   # Find filter on filters subset if subset is provided
+   if len(filters_subset) > 0:
+      filter_on_subset_list = 0
+      for fs in filters_subset:
+         if fs == filter_index_and_name_focuser_position[0]:
+            filter_on_subset_list = 1
+            break
+      if filter_on_subset_list == 1 and filter_index_and_name_focuser_position[5] == 0:
+         filter_index_and_name_focuser_position[5] = 1
+         ccdciel('LogMsg','Filter %s index %d found in filters subset, mark filter as in use' % (filter_name,filter_index_and_name_focuser_position[0]))
+      elif filter_on_subset_list == 0 and filter_index_and_name_focuser_position[5] == 1:
+         filter_index_and_name_focuser_position[5] = 0
+         ccdciel('LogMsg','Filter %s index %d not found in filters subset, mark filter as not in use' % (filter_name,filter_index_and_name_focuser_position[0]))
       
    # Calculate focuser position for selected filter using autofocus tool if filter is reference or usage flag is set to 1
    if filter_index_and_name_focuser_position[3] == 1 or filter_index_and_name_focuser_position[5] == 1:

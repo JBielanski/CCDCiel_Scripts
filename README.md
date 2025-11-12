@@ -69,10 +69,16 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 
 --> "--help"
 
- TODO:
-- Add parameter which allow to select filters subset like: "-s [1,3,4,5]" for slots 1,3,4 and 5.
+6) Use filters subset:
+- run script with parameters:
 
- List of changes:
+--> -s [1,3,4,5]
+
+for calculation will be used filters with index 1,3,4 and 5 if they are in filters wheel others filters will be marked as not in use.
+
+
+## List of changes:
+
 # [26-10-2025] Initial version
  - calculate focuser position for selected filter using autofocus tool
  - store information about filter and calculated focus point in database
@@ -102,3 +108,5 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 - added filter usage flag in database, allow to reduce filters for which will autofocus to selected subset: SELECTED FILTERS + REFERENCE FILTER
 - for other filters only offset will be recalculated
 - release under GPL-3.0 license
+# [12-11-2025]
+- added command line argument to select filters subset: --subset, -s <list of filter indexes>
