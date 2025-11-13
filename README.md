@@ -15,13 +15,14 @@ Script to manage focuser position per filter
 - store information about filter and calculated focus point in database
 - read and set focuser position from/to database
 - work in three modes:
-   - 'CALCULATE' [default] calculate focuser position for all filters in filter wheel and store in database
+   - 'CALCULATE' [DEFAULT] calculate focuser position for all filters in filter wheel and store in database
    - 'READ'      read configuration for focuser and filters from database
    - 'RESET'     reset focuser position to 0, set first filter in filters wheel, reomove all offsets for filters
 - allow to select focus method:
    - 'AUTO' [DEFAULT] can move to focus star
    - 'INPLACE' perform autofocus in current position
 - allow to provide reference/current filter name (for CCDCiel older than 0.9.92-3829) as parameter
+- allow to select subsets of filters for session
 
 Requirements:
 ## Supports for OFFSETS in scripts is new in CCDCiel and needs:
@@ -37,44 +38,51 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 - set manually focuser in position near focuse point
 - run script with parameters:
 
---> "-f <position>" - provide position near focus point
+--> "-m CALCULATE" - [OPTIONAL] calculate is default mode
 
---> "-d <name>" - name of database, default "focuser_position_per_filter.db"
+--> "-f <position>" - [OBLIGATORY] provide position near focus point
 
---> "-t <autofocus type>" - set autofocus method AUTO or INPLACE, AUTO is default and could move telescope to focus star 
+--> "-n <filter name>" OR "-i <filter index>" - [OBLIGATORY] to set reference filter
+
+--> -s <list of filters IDs> - [OPTIONAL] run autofocus for selected filters, provide list as array like: [1,3,4,5] (*) 
+
+--> "-d <name>" - [OPTIONAL] name of database, default "focuser_position_per_filter.db"
+
+--> "-t <autofocus type>" - [OPTIONAL] set autofocus method AUTO or INPLACE, AUTO is default and could move telescope to focus star 
 
 2) Usage when database has been created:
 - run script with parameters:
 
---> "-d <name>" - name of database if you provide own name, default "focuser_position_per_filter.db"
+--> "-m CALCULATE" - [OPTIONAL] calculate is default mode
 
---> "-t <autofocus type>" - set autofocus method AUTO or INPLACE, AUTO is default and could move telescope to focus star
+--> "-d <name>" - [OBLIGATORY/OPTIONAL] name of database if you provide own name, default "focuser_position_per_filter.db"
+
+--> "-t <autofocus type>" - [OPTIONAL] set autofocus method AUTO or INPLACE, AUTO is default and could move telescope to focus star
+
+--> "-n <filter name>" OR "-i <filter index>" - [OPTIONAL] to change reference filter, if not provided used reference filter from database
+
+--> -s <list of filters IDs> - [OPTIONAL] run autofocus for selected filters, provide list as array like: [1,3,4,5] (*) 
 
 3) Read data from database without running autofocus
 - run script with parameters:
 
---> "-m READ" - script will read data from database
+--> "-m READ" - [OBLIGATORY] script will read data from database
 
---> "-d <name>" - name of database if you provide own name, default "focuser_position_per_filter.db"
+--> "-d <name>" - [OBLIGATORY/OPTIONAL] name of database if you provide own name, default "focuser_position_per_filter.db"
 
---> "-n <filter name>" - set reference filter, for CCDCiel older than 0.9.92-3829 set current filter and read position
+--> "-n <filter name>" - [OBLIGATORY/OPTIONAL] set reference filter optional for new CCDCiel, for CCDCiel older than 0.9.92-3829 set current filter and read position, so parameter is obligatory
 
 4) Reset focuser and filter wheel data, useful at the end off session
 - run script with parameters:
 
---> "-m RESET"
+--> "-m RESET" - [OBLIGATORY] reset configuration in CCDCiel
 
 5) Display help
 - run script with parameters:
 
---> "--help"
+--> "--help" - display help
 
-6) Use filters subset:
-- run script with parameters:
-
---> -s [1,3,4,5]
-
-for calculation will be used filters with index 1,3,4 and 5 if they are in filters wheel others filters will be marked as not in use.
+(*) for calculation will be used filters with index 1,3,4 and 5 if they are in filters wheel others filters will be marked as not in use.
 
 
 ## List of changes:
@@ -110,3 +118,6 @@ for calculation will be used filters with index 1,3,4 and 5 if they are in filte
 - release under GPL-3.0 license
 # [12-11-2025]
 - added command line argument to select filters subset: --subset, -s <list of filter indexes>
+# [14-11-2025]
+- added selection of reference filter by ID --filterid, -i <filter index>
+- selection reference filter by name and index can not be use together, use: --filtername, -n <filter name> OR --filterid, -i <filter index>
