@@ -75,7 +75,7 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 4) Reset focuser and filter wheel data, useful at the end off session
 - run script with parameters:
 
---> "-m RESET" - [OBLIGATORY] reset configuration in CCDCiel
+--> "-m RESET" - [OBLIGATORY] reset configuration in CCDCiel (Remove all offsets / set filter wheel on FIRST position / set focuser on ZERO position)
 
 5) Display help
 - run script with parameters:
@@ -121,3 +121,5 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 # [14-11-2025]
 - added selection of reference filter by ID --filterid, -i <filter index>
 - selection reference filter by name and index can not be use together, use: --filtername, -n <filter name> OR --filterid, -i <filter index>
+# [15-11-2025]
+- RESET - remove all offsets, set filter wheel on FIRST position, set focuser on ZERO position

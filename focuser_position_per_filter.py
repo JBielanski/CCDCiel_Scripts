@@ -50,6 +50,8 @@
 # [14-11-2025]
 # - added selection of reference filter by ID --filterid, -i <filter index>
 # - selection reference filter by name and index can not be use together, use: --filtername, -n <filter name> OR --filterid, -i <filter index>
+# [15-11-2025]
+# - RESET - remove all offsets, set filter wheel on FIRST position, set focuser on ZERO position
 # ---------------------------------------------------------------------------- #
 #
 
@@ -313,7 +315,6 @@ def check_necessary_components():
 
 # reset_focuser_positions_and_offsets - reset focuser positions and offsets for all filters
 def reset_focuser_positions_and_offsets():
-   global initial_focuser_position
 
    # Get list of filters in filter wheel
    list_of_filters = (ccdciel('Wheel_GetfiltersName')['result'])
@@ -326,10 +327,8 @@ def reset_focuser_positions_and_offsets():
    # Set filter in filter wheel to reference filter (first filter)
    ccdciel('Wheel_setfilter',1)
    
-   # Set focuser position to initial focuser position if provided
-   if initial_focuser_position >= 0:
-      set_focuser_position(initial_focuser_position)
-      ccdciel('LogMsg','Set focuser position to initial focuser position %d' % (initial_focuser_position))
+   # Set focuser position to ZERO position
+   ccdciel('Focuser_setposition',0)
 
    return
 
