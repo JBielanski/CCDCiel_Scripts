@@ -1,5 +1,6 @@
 # CCDCiel_Scripts
 Repository contains the CCDCiel python scripts for making easier some complex operations.
+https://github.com/JBielanski/CCDCiel_Scripts
 
 # focuser_position_per_filter
 

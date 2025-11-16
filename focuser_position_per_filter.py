@@ -1,6 +1,7 @@
 # focuser_position_per_filter.py
 # SPDX-FileCopyrightText: 2025 Jan Bielanski
 # SPDX-License-Identifier: GPL-3.0-or-later
+# https://github.com/JBielanski/CCDCiel_Scripts
 #
 # ---------------------------------------------------------------------------- #
 # Script to manage focuser position per filter
