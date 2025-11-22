@@ -78,49 +78,49 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 - set manually focuser in position near focuse point
 - run script with parameters:
 
---> "-m CALCULATE" - [OPTIONAL] calculate is default mode
+--> `"-m CALCULATE"` - `[OPTIONAL]` calculate is default mode
 
---> "-f <position>" - [OBLIGATORY] provide position near focus point
+--> `"-f <position>"` - `[OBLIGATORY]` provide position near focus point
 
---> "-n <filter name>" OR "-i <filter index>" - [OBLIGATORY] to set reference filter
+--> `"-n <filter name>"` OR `"-i <filter index>"` - `[OBLIGATORY]` to set reference filter
 
---> -s <list of filters IDs> - [OPTIONAL] run autofocus for selected filters, provide list as array like: [1,3,4,5] (*) 
+--> `"-s <list of filters IDs>"` - `[OPTIONAL]` run autofocus for selected filters, provide list as array like: `[1,3,4,5] (*)` 
 
---> "-d <name>" - [OPTIONAL] name of database, default "focuser_position_per_filter.db"
+--> `"-d <name>"` - `[OPTIONAL]` name of database, default "focuser_position_per_filter.db"
 
---> "-t <autofocus type>" - [OPTIONAL] set autofocus method AUTO or INPLACE, AUTO is default and could move telescope to focus star 
+--> `"-t <autofocus type>"` - `[OPTIONAL]` set autofocus method AUTO or INPLACE, AUTO is default and could move telescope to focus star 
 
 2) Usage when database has been created:
 - run script with parameters:
 
---> "-m CALCULATE" - [OPTIONAL] calculate is default mode
+--> `"-m CALCULATE"` - `[OPTIONAL]` calculate is default mode
 
---> "-d <name>" - [OBLIGATORY/OPTIONAL] name of database if you provide own name, default "focuser_position_per_filter.db"
+--> `"-d <name>"` - `[OBLIGATORY/OPTIONAL]` name of database if you provide own name, default `"focuser_position_per_filter.db"`
 
---> "-t <autofocus type>" - [OPTIONAL] set autofocus method AUTO or INPLACE, AUTO is default and could move telescope to focus star
+--> `"-t <autofocus type>"` - `[OPTIONAL]` set autofocus method AUTO or INPLACE, AUTO is default and could move telescope to focus star
 
---> "-n <filter name>" OR "-i <filter index>" - [OPTIONAL] to change reference filter, if not provided used reference filter from database
+--> `"-n <filter name>"` OR `"-i <filter index>"` - `[OPTIONAL]` to change reference filter, if not provided used reference filter from database
 
---> -s <list of filters IDs> - [OPTIONAL] run autofocus for selected filters, provide list as array like: [1,3,4,5] (*) 
+--> `"-s <list of filters IDs>"` - `[OPTIONAL]` run autofocus for selected filters, provide list as array like: `[1,3,4,5] (*)` 
 
 3) Read data from database without running autofocus
 - run script with parameters:
 
---> "-m READ" - [OBLIGATORY] script will read data from database
+--> `"-m READ"` - `[OBLIGATORY]` script will read data from database
 
---> "-d <name>" - [OBLIGATORY/OPTIONAL] name of database if you provide own name, default "focuser_position_per_filter.db"
+--> `"-d <name>"` - `[OBLIGATORY/OPTIONAL]` name of database if you provide own name, default "focuser_position_per_filter.db"
 
---> "-n <filter name>" - [OBLIGATORY/OPTIONAL] set reference filter optional for new CCDCiel, for CCDCiel older than 0.9.92-3829 set current filter and read position, so parameter is obligatory
+--> `"-n <filter name>"` - `[OBLIGATORY/OPTIONAL]` set reference filter optional for new CCDCiel, for CCDCiel older than 0.9.92-3829 set current filter and read position, so parameter is obligatory
 
 4) Reset focuser and filter wheel data, useful at the end off session
 - run script with parameters:
 
---> "-m RESET" - [OBLIGATORY] reset configuration in CCDCiel (Remove all offsets / set filter wheel on FIRST position / set focuser on ZERO position)
+--> `"-m RESET"` - `[OBLIGATORY]` reset configuration in CCDCiel (Remove all offsets / set filter wheel on FIRST position / set focuser on ZERO position)
 
 5) Display help
 - run script with parameters:
 
---> "--help" - display help
+--> `"--help"` - display help
 
 (*) for calculation will be used filters with index 1,3,4 and 5 if they are in filters wheel others filters will be marked as not in use.
 
@@ -224,7 +224,9 @@ The script will do the following operations:
    - set iEQ (iOptron CEM-60-EC) in ZERO position (use INDI commands: iEQ)
 
 Script needs installed pyindi_client
+
 `sudo apt-get install swig libz3-dev libcfitsio-dev libnova-dev`
+
 `pip3 install --user --break-system-packages pyindi-client`
 
 ## List of changes:
@@ -244,7 +246,9 @@ Beware the action is immediate and without confirmation message!
 The script is dedicated for setups with INDI server controlling iOptron CEM-60-EC mount.
 
 Script needs installed pyindi_client
+
 `sudo apt-get install swig libz3-dev libcfitsio-dev libnova-dev`
+
 `pip3 install --user --break-system-packages pyindi-client`
 
 ## List of changes:
@@ -264,7 +268,9 @@ Beware the action is immediate and without confirmation message!
 The script is dedicated for setups with INDI server controlling Pegasus Astro Saddle Power Box.
 
 Script needs installed pyindi_client
+
 `sudo apt-get install swig libz3-dev libcfitsio-dev libnova-dev`
+
 `pip3 install --user --break-system-packages pyindi-client`
 
 ## List of changes:
