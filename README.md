@@ -127,10 +127,10 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 
 ## List of changes:
 
-# [26-10-2025] Initial version
+### [26-10-2025] Initial version
  - calculate focuser position for selected filter using autofocus tool
  - store information about filter and calculated focus point in database
-# [28-10-2025]
+### [28-10-2025]
  - script remember filter which was set before script has been started
  - script try to use current focuser position to initial for autofocus if:
  -- can not read position from database
@@ -138,30 +138,30 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
  - script exit if focuser position is 0 and ask to set it manually
  - script at the end return to filter which was set before script has 
    been started and set focuser position to calculated value for this filter
-# [29-10-2025]
+### [29-10-2025]
  - added reference filter and offset for each filter in database
  - move to reference filter after calculate focuser position for all filters in filters wheel
-# [01-11-2025]
+### [01-11-2025]
  - added working modes: CALCULATE (default) and READ
  - added command line arguments parser
-# [02-11-2025]
+### [02-11-2025]
  - added RESET working mode to reset focuser positions and offsets for all filters
  - added check for sqlite3 module
-# [07-11-2025]
+### [07-11-2025]
  - support recognize CCDCiel version in script
  - disable setting OFFSET for CCDCiel older than 0.9.92.3829
  - added option which allow to provide reference filter: --filtername, -n <filter name>
  - added selection between AutomaticAutofocus and Autofocus by: --focustype, -t <autofocus type: AUTO, INPLACE>
-# [09-11-2025]
+### [09-11-2025]
 - added filter usage flag in database, allow to reduce filters for which will autofocus to selected subset: SELECTED FILTERS + REFERENCE FILTER
 - for other filters only offset will be recalculated
 - release under GPL-3.0 license
-# [12-11-2025]
+### [12-11-2025]
 - added command line argument to select filters subset: --subset, -s <list of filter indexes>
-# [14-11-2025]
+### [14-11-2025]
 - added selection of reference filter by ID --filterid, -i <filter index>
 - selection reference filter by name and index can not be use together, use: --filtername, -n <filter name> OR --filterid, -i <filter index>
-# [15-11-2025]
+### [15-11-2025]
 - RESET - remove all offsets, set filter wheel on FIRST position, set focuser on ZERO position
 
 # `camera_warm_up`
@@ -177,7 +177,7 @@ Script to manage focuser position per filter
  - warm up the camera to constant 20C
 
 ## List of changes:
-# [21-11-2025] Initial version, simple camera warm up script to 20C
+### [21-11-2025] Initial version, simple camera warm up script to 20C
 
 # `log_focuser_position`
 
@@ -191,7 +191,7 @@ Copyright (c) 2025 Jan Bielanski
 Script for log focuser position
 
 ## List of changes:
-# [22-11-2025] Log focuser current position
+### [22-11-2025] Log focuser current position
 
 # `log_filters_wheel_position`
 
@@ -205,7 +205,7 @@ Copyright (c) 2025 Jan Bielanski
 Script for log filters wheel current position
 
 ## List of changes:
-# [22-11-2025] Log filters wheel current position
+### [22-11-2025] Log filters wheel current position
 
 # `end_session_indi`
 
@@ -228,7 +228,7 @@ Script needs installed pyindi_client
 `pip3 install --user --break-system-packages pyindi-client`
 
 ## List of changes:
-# [22-11-2025] Working version
+### [22-11-2025] Working version
 
 # `iEQ_scope_go_home_indi`
 
@@ -248,7 +248,7 @@ Script needs installed pyindi_client
 `pip3 install --user --break-system-packages pyindi-client`
 
 ## List of changes:
-# [22-11-2025] Working version
+### [22-11-2025] Working version
 
 # `pegasus_SPB_set_dews_AB_to_zero_indi`
 
@@ -268,4 +268,4 @@ Script needs installed pyindi_client
 `pip3 install --user --break-system-packages pyindi-client`
 
 ## List of changes:
-# [22-11-2025] Initial working version
+### [22-11-2025] Initial working version
