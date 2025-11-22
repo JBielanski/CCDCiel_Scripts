@@ -20,7 +20,9 @@ Following scripts needs INDI and thera are dedicated to specific equipments:
 
 - By `Makefile`:
 
-   `make all` - build and install `focuser_position_per_filter`
+   `make main` - build and install `focuser_position_per_filter`
+
+   `make all` - build and install all targets `main`, `additional` and `additional_indi`
 
    `make additional` - build and install additional scripts: `log_filterwheel_position`, `log_focuser_position`, `camera_warm_up`
 
