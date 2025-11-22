@@ -19,15 +19,24 @@ Following scripts needs INDI and thera are dedicated to specific equipments:
 ## Compilation
 
 - By Makefile:
+
    make all - build and install focuser_position_per_filter
+
    make additional - build and install additional scripts: log_filterwheel_position, log_focuser_position, camera_warm_up
+
    make additional_indi - build and install additional scripts with INDI dependency: end_session_indi, iEQ_scope_go_home_indi, pegasus_SPB_set_dews_AB_to_zero_indi
+   
    make clean - remove compiled files
+
 - By install_script_windows.bat:
+
    .\install_script_windows.bat - install focuser_position_per_filter
+
 - Simple installation:
+
    - rename *.py to *.script and put into CCDCiel directory
 Note:
+
    CCDCiel do not support compiled Python *.pyc files, compilation is useful for checking problem in scripts after any modification.
    Into CCDCiel directory should be put files with *.script extension.
 
