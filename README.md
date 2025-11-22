@@ -3,44 +3,45 @@ Repository contains the CCDCiel python scripts for making easier some complex op
 https://github.com/JBielanski/CCDCiel_Scripts
 
 ## List of scripts:
-- focuser_position_per_filter - setting focuser position per filter and store them in database
+- `focuser_position_per_filter` - setting focuser position per filter and store them in database
 Additional simple scripts:
-- log_filterwheel_position.py - simple script which log filter wheel position
-- log_focuser_position.py - simple script which log focuser position
-- camera_warm_up - simple script for warm up camera
+- `log_filterwheel_position` - simple script which log filter wheel position
+- `log_focuser_position` - simple script which log focuser position
+- `camera_warm_up` - simple script for warm up camera
 Following scripts needs INDI and thera are dedicated to specific equipments:
-- end_session_indi - script finish session:
+- `end_session_indi` - script finish session:
                         set filter wheel on first position and reset all offsets
                         set focuser on position ZERO
                         set iEQ (iOptron CEM-60-EC) in ZERO position (use INDI commands: iEQ)
-- iEQ_scope_go_home_indi - set iEQ (iOptron CEM-60-EC) in ZERO position (use INDI commands: iEQ)
-- pegasus_SPB_set_dews_AB_to_zero_indi - set dews ports A and B to ZERO for Pegasus Astro Saddle PowerBox (use INDI commands: pegasus_SPB)
+- `i`EQ_scope_go_home_indi` - set iEQ (iOptron CEM-60-EC) in ZERO position (use INDI commands: iEQ)
+- `pegasus_SPB_set_dews_AB_to_zero_indi` - set dews ports A and B to ZERO for Pegasus Astro Saddle PowerBox (use INDI commands: pegasus_SPB)
 
 ## Compilation
 
-- By Makefile:
+- By `Makefile`:
 
-   make all - build and install focuser_position_per_filter
+   `make all` - build and install `focuser_position_per_filter`
 
-   make additional - build and install additional scripts: log_filterwheel_position, log_focuser_position, camera_warm_up
+   `make additional` - build and install additional scripts: `log_filterwheel_position`, `log_focuser_position`, `camera_warm_up`
 
-   make additional_indi - build and install additional scripts with INDI dependency: end_session_indi, iEQ_scope_go_home_indi, pegasus_SPB_set_dews_AB_to_zero_indi
+   `make additional_indi` - build and install additional scripts with INDI dependency: `end_session_indi`, `iEQ_scope_go_home_indi`, `pegasus_SPB_set_dews_AB_to_zero_indi`
    
-   make clean - remove compiled files
+   `make clean` - remove compiled files
 
-- By install_script_windows.bat:
+- By `install_script_windows.bat`:
 
-   .\install_script_windows.bat - install focuser_position_per_filter
+   `.\install_script_windows.bat` - install `focuser_position_per_filter`
 
 - Simple installation:
 
-   - rename *.py to *.script and put into CCDCiel directory
+   rename `*.py` to `*.script` and put into CCDCiel directory
+
 Note:
 
-   CCDCiel do not support compiled Python *.pyc files, compilation is useful for checking problem in scripts after any modification.
-   Into CCDCiel directory should be put files with *.script extension.
+   CCDCiel do not support compiled Python `*.pyc` files, compilation is useful for checking problem in scripts after any modification.
+   Into CCDCiel directory should be put files with `*.script` extension.
 
-# focuser_position_per_filter
+# `focuser_position_per_filter`
 
 ## License
 
@@ -163,7 +164,7 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 # [15-11-2025]
 - RESET - remove all offsets, set filter wheel on FIRST position, set focuser on ZERO position
 
-# camera_warm_up
+# `camera_warm_up`
 
 ## License
 
@@ -178,7 +179,7 @@ Script to manage focuser position per filter
 ## List of changes:
 # [21-11-2025] Initial version, simple camera warm up script to 20C
 
-# log_focuser_position
+# `log_focuser_position`
 
 ## License
 
@@ -192,7 +193,7 @@ Script for log focuser position
 ## List of changes:
 # [22-11-2025] Log focuser current position
 
-# log_filters_wheel_position
+# `log_filters_wheel_position`
 
 ## License
 
@@ -206,7 +207,7 @@ Script for log filters wheel current position
 ## List of changes:
 # [22-11-2025] Log filters wheel current position
 
-# end_session_indi
+# `end_session_indi`
 
 ## License
 
@@ -223,13 +224,13 @@ The script will do the following operations:
    - set iEQ (iOptron CEM-60-EC) in ZERO position (use INDI commands: iEQ)
 
 Script needs installed pyindi_client
-sudo apt-get install swig libz3-dev libcfitsio-dev libnova-dev
-pip3 install --user --break-system-packages pyindi-client
+`sudo apt-get install swig libz3-dev libcfitsio-dev libnova-dev`
+`pip3 install --user --break-system-packages pyindi-client`
 
 ## List of changes:
 # [22-11-2025] Working version
 
-# iEQ_scope_go_home_indi
+# `iEQ_scope_go_home_indi`
 
 ## License
 
@@ -243,13 +244,13 @@ Beware the action is immediate and without confirmation message!
 The script is dedicated for setups with INDI server controlling iOptron CEM-60-EC mount.
 
 Script needs installed pyindi_client
-sudo apt-get install swig libz3-dev libcfitsio-dev libnova-dev
-pip3 install --user --break-system-packages pyindi-client
+`sudo apt-get install swig libz3-dev libcfitsio-dev libnova-dev`
+`pip3 install --user --break-system-packages pyindi-client`
 
 ## List of changes:
 # [22-11-2025] Working version
 
-# pegasus_SPB_set_dews_AB_to_zero_indi
+# `pegasus_SPB_set_dews_AB_to_zero_indi`
 
 ## License
 
@@ -263,8 +264,8 @@ Beware the action is immediate and without confirmation message!
 The script is dedicated for setups with INDI server controlling Pegasus Astro Saddle Power Box.
 
 Script needs installed pyindi_client
-sudo apt-get install swig libz3-dev libcfitsio-dev libnova-dev
-pip3 install --user --break-system-packages pyindi-client
+`sudo apt-get install swig libz3-dev libcfitsio-dev libnova-dev`
+`pip3 install --user --break-system-packages pyindi-client`
 
 ## List of changes:
 # [22-11-2025] Initial working version
