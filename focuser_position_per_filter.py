@@ -1,5 +1,5 @@
 # focuser_position_per_filter.py
-# SPDX-FileCopyrightText: 2025 Jan Bielanski
+# SPDX-FileCopyrightText: 2025,2026 Jan Bielanski
 # SPDX-License-Identifier: GPL-3.0-or-later
 # https://github.com/JBielanski/CCDCiel_Scripts
 #
@@ -53,6 +53,8 @@
 # - selection reference filter by name and index can not be use together, use: --filtername, -n <filter name> OR --filterid, -i <filter index>
 # [15-11-2025]
 # - RESET - remove all offsets, set filter wheel on FIRST position, set focuser on ZERO position
+# [07-02-2026]
+# - support official versions of CCDCiel, disable setting offset for version older than 0.9.93.3961
 # ---------------------------------------------------------------------------- #
 #
 
@@ -100,7 +102,7 @@ focus_type = 0 # Autofocus type AUTO - with eventually move to a bright star, IN
 # --filterid, -i <filter index>
 # --subset, -s <list of filter indexes>
 # --focustype, -t <autofocus type: AUTO, INPLACE>
-# --mode, -m <working mode: CALCULATE, READ, RESET>
+# --mode, -m <working mode: CALCULATE, READ, RESET, TEST>
 # --help, -help - display help
 def arguments_parser():
    """Parse command line arguments and update global settings.
@@ -112,7 +114,7 @@ def arguments_parser():
    --filterid, -i <filter index>
    --subset, -s <list of filter indexes>
    --focustype, -t <autofocus type: AUTO, INPLACE>
-   --mode, -m <working mode>: CALCULATE, READ, RESET
+   --mode, -m <working mode>: CALCULATE, READ, RESET, TEST
    --help, -help - display help and exit
 
    If provided, this updates the module-level globals:
@@ -126,7 +128,7 @@ def arguments_parser():
    global filters_subset
 
    usage = (
-      "Usage: {} [--mode|-m CALCULATE (default)/READ/RESET] [--dbname|-d <database>] [--focuserposition|-f <pos>] [--subset|-s <list of filter indexes>] [--focustype|-t <autofocus type: AUTO (default)/INPLACE>] [--filtername|-n <name>] [--filterid|-i <index>] [--help|-help]".format(sys.argv[0])
+      "Usage: {} [--mode|-m CALCULATE (default)/READ/RESET/TEST] [--dbname|-d <database>] [--focuserposition|-f <pos>] [--subset|-s <list of filter indexes>] [--focustype|-t <autofocus type: AUTO (default)/INPLACE>] [--filtername|-n <name>] [--filterid|-i <index>] [--help|-help]".format(sys.argv[0])
    )
 
    # Test reference filter id/name flag 
@@ -240,8 +242,10 @@ def arguments_parser():
             script_working_mode = 1
          elif mode_arg == "RESET":
             script_working_mode = 2
+         elif mode_arg == "TEST":
+            script_working_mode = 3
          else:
-            print("Error: invalid mode value for %s, must be CALCULATE, READ or RESET" % a)
+            print("Error: invalid mode value for %s, must be CALCULATE, READ, RESET or TEST" % a)
             print(usage)
             sys.exit(1)
          ccdciel('LogMsg', 'Script working mode set from arguments: %s' % (mode_arg))
@@ -253,24 +257,29 @@ def arguments_parser():
 
    return
    
-# check_for_version_neq_0_9_92_3829
+# check_for_version_neq_0_9_93_3961
 # @return status
 # 1 - newer version
 # 0 - older version
-def check_for_version_neq_0_9_92_3829(display_log):
+def check_for_version_neq_0_9_93_3961(display_log):
    global ccdciel_version
    status = 0 # Status of operation
-   if ccdciel_version[0] == '0.9.92':
-      if int(ccdciel_version[1]) >= 3829:
-         status = 1
-         if display_log == 1:
-            ccdciel('LogMsg', 'Setting FILTERS OFFSETS for FOCUSER supported in script')
-      else:
-         if display_log == 1:
-            ccdciel('LogMsg', 'Setting FILTERS OFFSETS for FOCUSER NOT supported in script, minimal version is 0.9.92-3829')
+   version_and_revision = [int(x) for x in ccdciel_version[0].split('.')]
+
+   if version_and_revision[0] >= 1:
+      status = 1
+   elif version_and_revision[0] == 0 and version_and_revision[1] == 9 and version_and_revision[2] >= 93:
+      status = 1
+   else:
+      status = 0
+
+   if status == 0:
+      if display_log == 1:
+         ccdciel('LogMsg', 'Setting FILTERS OFFSETS for FOCUSER NOT supported in script, minimal official version is 0.9.93-3961')
    else:
       if display_log == 1:
-         ccdciel('LogMsg', 'Setting FILTERS OFFSETS for FOCUSER NOT supported in script, minimal version is 0.9.92-3829')
+         ccdciel('LogMsg', 'Setting FILTERS OFFSETS for FOCUSER supported in script, current version is %s' % (ccdciel_version[0]))
+
    return status
 
 # check_necessary_components - check if necessary components are connected
@@ -305,7 +314,7 @@ def check_necessary_components():
       status = 21
 
    # Offsets support
-   check_for_version_neq_0_9_92_3829(1)
+   check_for_version_neq_0_9_93_3961(1)
 
    # Exit script if necessary components are not connected
    if status != 0:
@@ -784,7 +793,7 @@ def calculate_focuser_position_for_filter_wheel():
    list_of_filters = (ccdciel('Wheel_GetfiltersName')['result'])
 
    # Reset offset for each filter in filters wheel
-   if check_for_version_neq_0_9_92_3829(0) == 1:
+   if check_for_version_neq_0_9_93_3961(0) == 1:
       for idf,f in enumerate(list_of_filters):
          ccdciel('Set_FilterOffset',[f,0])
 
@@ -819,7 +828,7 @@ def calculate_focuser_position_for_filter_wheel():
       filter_name_to_set[1] = reference_filter_id
    for idf,f in enumerate(list_of_filters):
       focuser_position_per_filter[idf][4] = focuser_position_per_filter[idf][2] - focuser_position_per_filter[reference_filter_id-1][2]
-      if check_for_version_neq_0_9_92_3829(0) == 1:
+      if check_for_version_neq_0_9_93_3961(0) == 1:
          ccdciel('Set_FilterOffset',[focuser_position_per_filter[idf][1],focuser_position_per_filter[idf][4]])
          ccdciel('LogMsg','Filter index: %d name: %s offset: %d' % (focuser_position_per_filter[idf][0],focuser_position_per_filter[idf][1],focuser_position_per_filter[idf][4]))
 
@@ -867,7 +876,7 @@ def read_focuser_position_for_filters():
          exit(1)
 
    # Reset offset for each filter in filters wheel
-   if check_for_version_neq_0_9_92_3829(0) == 1:
+   if check_for_version_neq_0_9_93_3961(0) == 1:
       for idf,f in enumerate(list_of_filters):
          ccdciel('Set_FilterOffset',[f,0])
 
@@ -875,7 +884,7 @@ def read_focuser_position_for_filters():
    status = select_filter_and_set_focuser_position(filters_and_focuser_positions_database_file,filters_and_focuser_positions_database_directory, filter_name_to_set)
 
    # Set offset for each filter in filters wheel
-   if check_for_version_neq_0_9_92_3829(0) == 1:
+   if check_for_version_neq_0_9_93_3961(0) == 1:
       # Recalculate offsets
       if filter_name_to_set[2] == filter_name_to_set[0]:
          # Get current focuser position
@@ -906,7 +915,8 @@ ccdciel('LogMsg','[INFO] Database name %s' % (filters_and_focuser_positions_data
 ccdciel('LogMsg','[INFO] Initial focuser position %d' % (initial_focuser_position))
 
 # Check necessary components are connected
-check_necessary_components()
+if script_working_mode != 3:
+   check_necessary_components()
 
 # Run script in selected working mode CALCULATE (0) - default or READ (1) or RESET (2)
 if script_working_mode == 1:
@@ -915,6 +925,32 @@ if script_working_mode == 1:
 elif script_working_mode == 2:
    ccdciel('LogMsg','[INFO] Script working mode: RESET focuser positions and offsets for all filters')
    reset_focuser_positions_and_offsets()
+
+elif script_working_mode == 3:
+   ccdciel('LogMsg','[INFO] Script working mode: TEST...')
+
+   # Test for version check function
+   ccdciel('LogMsg','[UNIT TEST] status for current version %s: %d' % (ccdciel_version[2], check_for_version_neq_0_9_93_3961(0)))
+   ccdciel_version = ['0.9.93', '3961', '0.9.93_3961']
+   status = check_for_version_neq_0_9_93_3961(0)
+   if status == 1:
+      ccdciel('LogMsg','[UNIT TEST] [PASS] status for version %s: %d, expected: 1' % (ccdciel_version[2], status))
+   else:
+      ccdciel('LogMsg','[UNIT TEST] [FAIL] status for version %s: %d, expected: 1' % (ccdciel_version[2], status))
+   ccdciel_version = ['0.9.92', '3775', '0.9.92_3775']
+   status = check_for_version_neq_0_9_93_3961(0)
+   if status == 0:
+      ccdciel('LogMsg','[UNIT TEST] [PASS] status for version %s: %d, expected: 0' % (ccdciel_version[2], status))
+   else:
+      ccdciel('LogMsg','[UNIT TEST] [FAIL] status for version %s: %d, expected: 0' % (ccdciel_version[2], status))
+   ccdciel_version = ['1.0.0', '1000', '1.0.0_1000']
+   status = check_for_version_neq_0_9_93_3961(0)
+   if status == 1:
+      ccdciel('LogMsg','[UNIT TEST] [PASS] status for version %s: %d, expected: 1' % (ccdciel_version[2], status))
+   else:
+      ccdciel('LogMsg','[UNIT TEST] [FAIL] status for version %s: %d, expected: 1' % (ccdciel_version[2], status))
+   # End of test for version check function
+
 else:
    ccdciel('LogMsg','[INFO] Script working mode: CALCULATE focuser position for filter wheel')
    calculate_focuser_position_for_filter_wheel()
