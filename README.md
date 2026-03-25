@@ -165,6 +165,13 @@ https://www.ap-i.net/ccdciel/en/documentation/jsonrpc_reference
 - selection reference filter by name and index can not be use together, use: --filtername, -n <filter name> OR --filterid, -i <filter index>
 ### [15-11-2025]
 - RESET - remove all offsets, set filter wheel on FIRST position, set focuser on ZERO position
+### [07-02-2026]
+- support official versions of CCDCiel, disable setting offset for version older than 0.9.93.3961
+### [25-03-2026]
+- added TEST working mode to run tests
+- added UNIT TESTS for main functions of the script
+
+Run Unit Test's by command: `pytest -q TEST/test_focuser_position_per_filter.py`
 
 # `camera_warm_up`
 

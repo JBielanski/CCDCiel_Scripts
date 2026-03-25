@@ -55,6 +55,9 @@
 # - RESET - remove all offsets, set filter wheel on FIRST position, set focuser on ZERO position
 # [07-02-2026]
 # - support official versions of CCDCiel, disable setting offset for version older than 0.9.93.3961
+# [25-03-2026]
+# - added TEST working mode to run tests
+# - added UNIT TESTS for main functions of the script
 # ---------------------------------------------------------------------------- #
 #
 
@@ -906,53 +909,65 @@ def read_focuser_position_for_filters():
 # --------------- MAIN - FOCUSER POSITION PER FILTER - MAIN ------------------ #
 # ---------------------------------------------------------------------------- #
 
-# Parse arguments from command line
-arguments_parser()
+def main():
+    """Main entrypoint for script when invoked directly."""
 
-ccdciel('LogMsg','[INFO] This script path %s' % (this_script_path))
-ccdciel('LogMsg','[INFO] This script directory %s' % (this_script_dir))
-ccdciel('LogMsg','[INFO] Database name %s' % (filters_and_focuser_positions_database_file))
-ccdciel('LogMsg','[INFO] Initial focuser position %d' % (initial_focuser_position))
+    global ccdciel_version
 
-# Check necessary components are connected
-if script_working_mode != 3:
-   check_necessary_components()
+    # Parse arguments from command line
+    arguments_parser()
 
-# Run script in selected working mode CALCULATE (0) - default or READ (1) or RESET (2)
-if script_working_mode == 1:
-   ccdciel('LogMsg','[INFO] Script working mode: READ focuser position for selected filter from database')
-   read_focuser_position_for_filters()
-elif script_working_mode == 2:
-   ccdciel('LogMsg','[INFO] Script working mode: RESET focuser positions and offsets for all filters')
-   reset_focuser_positions_and_offsets()
+    ccdciel('LogMsg','[INFO] This script path %s' % (this_script_path))
+    ccdciel('LogMsg','[INFO] This script directory %s' % (this_script_dir))
+    ccdciel('LogMsg','[INFO] Database name %s' % (filters_and_focuser_positions_database_file))
+    ccdciel('LogMsg','[INFO] Initial focuser position %d' % (initial_focuser_position))
 
-elif script_working_mode == 3:
-   ccdciel('LogMsg','[INFO] Script working mode: TEST...')
+    # Check necessary components are connected
+    if script_working_mode != 3:
+        check_necessary_components()
 
-   # Test for version check function
-   ccdciel('LogMsg','[UNIT TEST] status for current version %s: %d' % (ccdciel_version[2], check_for_version_neq_0_9_93_3961(0)))
-   ccdciel_version = ['0.9.93', '3961', '0.9.93_3961']
-   status = check_for_version_neq_0_9_93_3961(0)
-   if status == 1:
-      ccdciel('LogMsg','[UNIT TEST] [PASS] status for version %s: %d, expected: 1' % (ccdciel_version[2], status))
-   else:
-      ccdciel('LogMsg','[UNIT TEST] [FAIL] status for version %s: %d, expected: 1' % (ccdciel_version[2], status))
-   ccdciel_version = ['0.9.92', '3775', '0.9.92_3775']
-   status = check_for_version_neq_0_9_93_3961(0)
-   if status == 0:
-      ccdciel('LogMsg','[UNIT TEST] [PASS] status for version %s: %d, expected: 0' % (ccdciel_version[2], status))
-   else:
-      ccdciel('LogMsg','[UNIT TEST] [FAIL] status for version %s: %d, expected: 0' % (ccdciel_version[2], status))
-   ccdciel_version = ['1.0.0', '1000', '1.0.0_1000']
-   status = check_for_version_neq_0_9_93_3961(0)
-   if status == 1:
-      ccdciel('LogMsg','[UNIT TEST] [PASS] status for version %s: %d, expected: 1' % (ccdciel_version[2], status))
-   else:
-      ccdciel('LogMsg','[UNIT TEST] [FAIL] status for version %s: %d, expected: 1' % (ccdciel_version[2], status))
-   # End of test for version check function
+    # Run script in selected working mode CALCULATE (0) - default or READ (1) or RESET (2)
+    if script_working_mode == 1:
+        ccdciel('LogMsg','[INFO] Script working mode: READ focuser position for selected filter from database')
+        return read_focuser_position_for_filters()
+    elif script_working_mode == 2:
+        ccdciel('LogMsg','[INFO] Script working mode: RESET focuser positions and offsets for all filters')
+        reset_focuser_positions_and_offsets()
+        return 0
 
-else:
-   ccdciel('LogMsg','[INFO] Script working mode: CALCULATE focuser position for filter wheel')
-   calculate_focuser_position_for_filter_wheel()
+    elif script_working_mode == 3:
+        ccdciel('LogMsg','[INFO] Script working mode: TEST...')
+
+        # Test for version check function
+        ccdciel('LogMsg','[UNIT TEST] status for current version %s: %d' % (ccdciel_version[2], check_for_version_neq_0_9_93_3961(0)))
+        ccdciel_version = ['0.9.93', '3961', '0.9.93_3961']
+        status = check_for_version_neq_0_9_93_3961(0)
+        if status == 1:
+            ccdciel('LogMsg','[UNIT TEST] [PASS] status for version %s: %d, expected: 1' % (ccdciel_version[2], status))
+        else:
+            ccdciel('LogMsg','[UNIT TEST] [FAIL] status for version %s: %d, expected: 1' % (ccdciel_version[2], status))
+        ccdciel_version = ['0.9.92', '3775', '0.9.92_3775']
+        status = check_for_version_neq_0_9_93_3961(0)
+        if status == 0:
+            ccdciel('LogMsg','[UNIT TEST] [PASS] status for version %s: %d, expected: 0' % (ccdciel_version[2], status))
+        else:
+            ccdciel('LogMsg','[UNIT TEST] [FAIL] status for version %s: %d, expected: 0' % (ccdciel_version[2], status))
+        ccdciel_version = ['1.0.0', '1000', '1.0.0_1000']
+        status = check_for_version_neq_0_9_93_3961(0)
+        if status == 1:
+            ccdciel('LogMsg','[UNIT TEST] [PASS] status for version %s: %d, expected: 1' % (ccdciel_version[2], status))
+        else:
+            ccdciel('LogMsg','[UNIT TEST] [FAIL] status for version %s: %d, expected: 1' % (ccdciel_version[2], status))
+        # End of test for version check function
+
+        return 0
+
+    else:
+        ccdciel('LogMsg','[INFO] Script working mode: CALCULATE focuser position for filter wheel')
+        return calculate_focuser_position_for_filter_wheel()
+
+
+if __name__ == '__main__':
+    main()
 
 # ---------------------------------------------------------------------------- #
