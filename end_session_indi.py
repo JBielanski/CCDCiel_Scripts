@@ -202,21 +202,23 @@ def SetFilterToFirst():
 #
 # MAIN PROGRAM
 #
-if SetFocuserToZeroPosition() == -1:
-   ccdciel('LogMsg','Focuser not connected!')
-else:
-   ccdciel('LogMsg','Focuser position has been set to ZERO')
+def main():
+    if SetFocuserToZeroPosition() == -1:
+        ccdciel('LogMsg','Focuser not connected!')
+    else:
+        ccdciel('LogMsg','Focuser position has been set to ZERO')
 
-if SetFilterToFirst() == -1:
-   ccdciel('LogMsg','Filters wheel not connected!')
-else:
-   ccdciel('LogMsg','Position in filter wheel has been set to FIRST')
-
-
-if TelescopeGoToHomePosition() == -1:
-    ccdciel('LogMsg','Can not move mount iEQ into HOME position!')
-else:
-    ccdciel('LogMsg','The iEQ mount has been moved into HOME position')
+    if SetFilterToFirst() == -1:
+        ccdciel('LogMsg','Filters wheel not connected!')
+    else:
+        ccdciel('LogMsg','Position in filter wheel has been set to FIRST')
 
 
+    if TelescopeGoToHomePosition() == -1:
+        ccdciel('LogMsg','Can not move mount iEQ into HOME position!')
+    else:
+        ccdciel('LogMsg','The iEQ mount has been moved into HOME position')
+
+if __name__ == "__main__":
+    main()
 

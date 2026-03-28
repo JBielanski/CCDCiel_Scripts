@@ -109,17 +109,20 @@ def processing_indi_commands_iEQ():
 #
 # MAIN PROGRAM
 #
+def main():
+    connected = (ccdciel('Telescope_Connected')['result'])
+    if not connected :
+        ccdciel('LogMsg','Telescope not connected!')
+        sys.exit(1)
 
-connected = (ccdciel('Telescope_Connected')['result'])
-if not connected :
-   ccdciel('LogMsg','Telescope not connected!')
-   sys.exit(1)
-   
-parked = (ccdciel('Telescope_Parked')['result'])
-if parked :
-   ccdciel('LogMsg','Unpark the telescope')
-   r = (ccdciel('Telescope_Park',False)['result']['status'])
-   ccdciel('LogMsg','Telescope status parked %r' %(r))
+    parked = (ccdciel('Telescope_Parked')['result'])
+    if parked :
+        ccdciel('LogMsg','Unpark the telescope')
+        r = (ccdciel('Telescope_Park',False)['result']['status'])
+        ccdciel('LogMsg','Telescope status parked %r' %(r))
 
-# Go home position using INDI
-processing_indi_commands_iEQ()
+    # Go home position using INDI
+    processing_indi_commands_iEQ()
+
+if __name__ == "__main__":
+    main()

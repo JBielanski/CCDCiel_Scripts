@@ -20,28 +20,32 @@ from ccdciel import ccdciel
 import sys
 import time
 
-connected = (ccdciel('Camera_connected')['result'])
-if not connected :
-   ccdciel('LogMsg','Camera is not connected!')
-   sys.exit(1)
+def main():
+    connected = (ccdciel('Camera_connected')['result'])
+    if not connected :
+        ccdciel('LogMsg','Camera is not connected!')
+        sys.exit(1)
 
-# Warm up the camera, setting the temperature to 20 C
-# TODO: could be improved by taken ambient temperature into account
-ccdciel('Ccd_settemperature',20)
-ccdciel('LogMsg','Warming up the camera to 20 C...')
+    # Warm up the camera, setting the temperature to 20 C
+    # TODO: could be improved by taken ambient temperature into account
+    ccdciel('Ccd_settemperature',20)
+    ccdciel('LogMsg','Warming up the camera to 20 C...')
 
-# Loop until the camera temperature reaches 20 C or 5 minutes have passed
-start_time = time.time()
-while True:
+    # Loop until the camera temperature reaches 20 C or 5 minutes have passed
+    start_time = time.time()
+    while True:
+        ct = ccdciel('CcdTemp')['result']
+        if ct >= 20:
+            break
+        if time.time() - start_time > 300:
+            ccdciel('LogMsg','Timeout reached while warming up the camera.')
+            break
+        ccdciel('LogMsg','Curent main camera temperature = %lf C' %(ct))
+        time.sleep(5)
+
+    # Final temperature log
     ct = ccdciel('CcdTemp')['result']
-    if ct >= 20:
-        break
-    if time.time() - start_time > 300:
-        ccdciel('LogMsg','Timeout reached while warming up the camera.')
-        break
-    ccdciel('LogMsg','Curent main camera temperature = %lf C' %(ct))
-    time.sleep(5)
+    ccdciel('LogMsg','Camera warm up completed. Current temperature = %lf C' %(ct))
 
-# Final temperature log
-ct = ccdciel('CcdTemp')['result']
-ccdciel('LogMsg','Camera warm up completed. Current temperature = %lf C' %(ct))
+if __name__ == "__main__":
+    main()

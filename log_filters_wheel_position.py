@@ -18,17 +18,20 @@
 from ccdciel import ccdciel
 import sys
 
-connected = (ccdciel('Wheel_connected')['result'])
-if not connected :
-   ccdciel('LogMsg','Filters wheel not connected!')
-   sys.exit(1)
+def main():
+   connected = (ccdciel('Wheel_connected')['result'])
+   if not connected :
+      ccdciel('LogMsg','Filters wheel not connected!')
+      sys.exit(1)
 
-# Get the filters array
-filters = ccdciel('Wheel_GetfiltersName')['result']
+   # Get the filters array
+   filters = ccdciel('Wheel_GetfiltersName')['result']
 
-# Get the current filter
-fp = ccdciel('Wheel_getfilter')['result']
+   # Get the current filter
+   fp = ccdciel('Wheel_getfilter')['result']
 
-# Print the current filter
-ccdciel('LogMsg','Current filter is %s' %(filters[int(fp.get('status'))-1]))
+   # Print the current filter
+   ccdciel('LogMsg','Current filter is %s' %(filters[int(fp.get('status'))-1]))
 
+if __name__ == "__main__":
+    main()

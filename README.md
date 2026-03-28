@@ -43,6 +43,17 @@ Note:
    CCDCiel do not support compiled Python `*.pyc` files, compilation is useful for checking problem in scripts after any modification.
    Into CCDCiel directory should be put files with `*.script` extension.
 
+# `ccdciel`
+
+Mock for CCDCiel python API for unit testing purpose.
+
+Run Unit Test's and Test's by commands: 
+   `pytest -q TEST/test_ccdciel_mock.py`
+   `python TEST/test_ccdciel_mock.py`
+
+## List of changes:
+### [28-03-2023] Added tests for ccdciel mock
+
 # `focuser_position_per_filter`
 
 ## License

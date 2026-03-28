@@ -18,14 +18,17 @@
 from ccdciel import ccdciel
 import sys
 
-connected = (ccdciel('Focuser_connected')['result'])
-if not connected :
-   ccdciel('LogMsg','Focuser not connected!')
-   sys.exit(1)
+def main():
+   connected = (ccdciel('Focuser_connected')['result'])
+   if not connected :
+      ccdciel('LogMsg','Focuser not connected!')
+      sys.exit(1)
 
-# Get the focuser position
-fp = ccdciel('FocuserPosition')['result']
+   # Get the focuser position
+   fp = ccdciel('FocuserPosition')['result']
 
-# Print the focuser position
-ccdciel('LogMsg','Focuser position=%d' %(fp))
+   # Print the focuser position
+   ccdciel('LogMsg','Focuser position=%d' %(fp))
 
+if __name__ == "__main__":
+    main()
