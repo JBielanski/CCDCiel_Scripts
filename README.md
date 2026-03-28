@@ -52,7 +52,9 @@ Run Unit Test's and Test's by commands:
    `python TEST/test_ccdciel_mock.py`
 
 ## List of changes:
-### [28-03-2023] Added tests for ccdciel mock
+
+### [28-03-2023] 
+ - Added tests for ccdciel mock
 
 # `focuser_position_per_filter`
 
@@ -211,7 +213,8 @@ Copyright (c) 2025 Jan Bielanski
 Script for log focuser position
 
 ## List of changes:
-### [22-11-2025] Log focuser current position
+### [22-11-2025] 
+ - Log focuser current position
 
 # `log_filters_wheel_position`
 
@@ -225,7 +228,8 @@ Copyright (c) 2025 Jan Bielanski
 Script for log filters wheel current position
 
 ## List of changes:
-### [22-11-2025] Log filters wheel current position
+### [22-11-2025] 
+ - Log filters wheel current position
 
 # `end_session_indi`
 
@@ -250,7 +254,8 @@ Script needs installed pyindi_client
 `pip3 install --user --break-system-packages pyindi-client`
 
 ## List of changes:
-### [22-11-2025] Working version
+### [22-11-2025] 
+ - Working version
 
 # `iEQ_scope_go_home_indi`
 
@@ -272,7 +277,8 @@ Script needs installed pyindi_client
 `pip3 install --user --break-system-packages pyindi-client`
 
 ## List of changes:
-### [22-11-2025] Working version
+### [22-11-2025] 
+ - Working version
 
 # `pegasus_SPB_set_dews_AB_to_zero_indi`
 
@@ -294,4 +300,5 @@ Script needs installed pyindi_client
 `pip3 install --user --break-system-packages pyindi-client`
 
 ## List of changes:
-### [22-11-2025] Initial working version
+### [22-11-2025] 
+ - Initial working version
