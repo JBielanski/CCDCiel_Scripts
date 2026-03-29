@@ -1,5 +1,5 @@
 # pegasus_SPB_set_dews_AB_to_zero_indi.py
-# SPDX-FileCopyrightText: 2025 Jan Bielanski
+# SPDX-FileCopyrightText: 2025, 2026 Jan Bielanski
 # SPDX-License-Identifier: GPL-3.0-or-later
 # https://github.com/JBielanski/CCDCiel_Scripts
 #
@@ -106,8 +106,6 @@ def processing_indi_commands_pa_spb():
     c=dir(pa_spb_dew_operation_auto[0])
     print(str(c))
 
-
-
     d=pa_spb_dew_operation_auto[0].getState()
     print("(0) Enabled: %s : %s" % (str(d), str(pa_spb_dew_operation_auto[0].getStateAsString())))
     d=pa_spb_dew_operation_auto[1].getState()
@@ -124,12 +122,15 @@ def processing_indi_commands_pa_spb():
 #
 # MAIN PROGRAM
 #
+def main():
+    # Check is weather station connected - temporary disabled
+    #connected = (ccdciel('weather_station_connected')['details'])
+    #if not connected :
+    #   ccdciel('LogMsg','Weather station not connected!')
+    #   sys.exit(1)
+    
+    # Go home position using INDI
+    processing_indi_commands_pa_spb()
 
-# Check is weather station connected - temporary disabled
-#connected = (ccdciel('weather_station_connected')['details'])
-#if not connected :
-#   ccdciel('LogMsg','Weather station not connected!')
-#   sys.exit(1)
-   
-# Go home position using INDI
-processing_indi_commands_pa_spb()
+if __name__ == "__main__":
+    main()

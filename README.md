@@ -299,6 +299,14 @@ Script needs installed pyindi_client
 
 `pip3 install --user --break-system-packages pyindi-client`
 
+Run Unit Test's and Test's by commands: 
+   `pytest -q TEST/test_pegasus_SPB_set_dews_AB_to_zero_indi.py`
+   `python -m pytest TEST/test_pegasus_SPB_set_dews_AB_to_zero_indi.py`
+
 ## List of changes:
 ### [22-11-2025] 
  - Initial working version
+
+### [30-03-2026]
+ - Added `PyIndi.py` mock
+ - Added unit tests 
